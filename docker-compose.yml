@@ -1,0 +1,17 @@
+services:
+  beets:
+    image: lscr.io/linuxserver/beets:latest
+    container_name: beets
+    restart: unless-stopped
+    environment:
+      PUID: "1000" # OMV 'plex' user, so tidied files are editable from the Mac
+      PGID: "100"  # 'users' group
+      TZ: "Europe/London"
+    volumes:
+      - ./config:/config
+      # Original collection: READ-ONLY, beets can never change it.
+      - /srv/dev-disk-by-uuid-5e5c1043-1071-4ab9-a394-dc66545e4ee7/plexmedia/Music:/music:ro
+      # The tidied copy (Navidrome will point here once you're happy with it).
+      - /srv/dev-disk-by-uuid-5e5c1043-1071-4ab9-a394-dc66545e4ee7/plexmedia/Music-tidy:/music-tidy
+      # Low-bitrate files and extra duplicates, kept for review before deleting.
+      - /srv/dev-disk-by-uuid-5e5c1043-1071-4ab9-a394-dc66545e4ee7/plexmedia/Music-quarantine:/quarantine

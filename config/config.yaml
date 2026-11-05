@@ -1,0 +1,61 @@
+# beets config for Phil's music library on OMV.
+# Paths are as seen INSIDE the container (see docker-compose.yml):
+#   /music        original collection (read-only, never changed)
+#   /music-tidy   the new, tidied copy that Navidrome will use
+#   /quarantine   low-bitrate files and extra duplicate copies, for review before deleting
+
+directory: /music-tidy
+library: /config/library.db
+
+plugins:
+  - musicbrainz   # match albums against MusicBrainz (must be listed since beets 2.4)
+  - chroma        # audio fingerprints (AcoustID) for badly tagged files
+  - fromfilename  # guess artist/title from file names when tags are empty
+  - fetchart      # download cover art
+  - embedart      # put cover art inside the files too
+  - duplicates    # find duplicate tracks/albums
+  - info          # show all tags for a file
+  - edit          # fix tags by hand in a text editor
+  - inline        # small computed fields used in folder names (multidisc below)
+
+import:
+  copy: yes             # copy into /music-tidy; originals stay as they are
+  move: no
+  write: yes            # write corrected tags into the copies
+  incremental: yes      # remember what's been imported, so a re-run only does new folders
+  resume: ask
+  log: /config/import.log
+  quiet_fallback: asis  # in quiet mode, unmatched albums are kept with their own tags (nothing lost)
+  duplicate_action: keep # keep both copies on import; sort duplicates out afterwards
+  detail: yes
+
+paths:
+  default: $albumartist/$album%aunique{}/%if{$multidisc,$disc-}$track $title
+  comp: Compilations/$album%aunique{}/%if{$multidisc,$disc-}$track $title
+  singleton: Non-Album/$artist/$title
+
+# Treat albums that MusicBrainz calls "Various Artists" as compilations.
+va_name: "Various Artists"
+
+item_fields:
+  multidisc: 1 if (disctotal or 0) > 1 else 0
+
+per_disc_numbering: yes
+original_date: no
+
+chroma:
+  auto: yes
+
+fetchart:
+  auto: yes
+  minwidth: 300
+  sources: [filesystem, coverart, itunes, amazon]
+
+embedart:
+  auto: yes
+  maxwidth: 1000
+
+duplicates:
+  # When choosing which copy of a duplicate to keep: lossless first, then highest bitrate.
+  tiebreak:
+    items: [bitrate]

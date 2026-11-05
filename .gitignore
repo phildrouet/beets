@@ -1,0 +1,15 @@
+# Files beets creates in /config at runtime
+config/library.db
+config/library.db-*
+config/state.pickle
+config/*.log
+config/*.bak
+config/.config/
+config/beets.log
+
+# Audit output
+music-audit/
+
+# Python cache
+__pycache__/
+*.pyc
