@@ -29,6 +29,26 @@ It writes `report.md` plus CSV files to `/root/music-audit`: low-bitrate files (
 and unreadable or untagged files. Share `report.md` (and the CSVs if needed) with
 Claude to plan the clean-up.
 
+## 1b. Clean up using the audit
+
+`scripts/cleanup_music.py` acts on the audit results. It deletes only macOS junk
+(`._*` and `.DS_Store`) and **moves** everything else into `Music-quarantine`, sorted
+into `duplicates/`, `low-bitrate/`, `ccr-editions/`, `drm/` (iTunes `.m4p`) and
+`broken/`. Duplicates keep the best-quality copy and, at similar quality, the copy on
+the original album rather than a compilation or single. Close-but-different masters
+(fingerprint match under 0.85) are left alone. For the Creedence box set, one edition
+per album is kept (40th Anniversary, else 20-bit K2).
+
+```
+cd /opt/beets && git pull
+python3 scripts/cleanup_music.py --audit /root/music-audit            # dry run: shows the plan
+less /root/music-audit/cleanup-plan.tsv                               # optional: check the list
+python3 scripts/cleanup_music.py --audit /root/music-audit --apply    # do it
+```
+
+To undo, run the command it prints at the end (`--undo <manifest>`). After the clean-up,
+steps 5 and 6 below are just a mop-up for anything beets finds that the audit missed.
+
 ## 2. Start beets
 
 ```

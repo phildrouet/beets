@@ -148,9 +148,11 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
 
-    files = [str(p) for p in root.rglob("*") if p.is_file() and p.suffix.lower() in AUDIO_EXT]
+    def junk(p):  # macOS metadata files (._Song.mp3, .DS_Store) are not music
+        return p.name.startswith("._") or p.name.lower() == ".ds_store"
+    files = [str(p) for p in root.rglob("*") if p.is_file() and not junk(p) and p.suffix.lower() in AUDIO_EXT]
     other = Counter(p.suffix.lower() or "(none)" for p in root.rglob("*")
-                    if p.is_file() and p.suffix.lower() not in AUDIO_EXT)
+                    if p.is_file() and not junk(p) and p.suffix.lower() not in AUDIO_EXT)
     print(f"Found {len(files)} audio files. Reading tags with {a.workers} workers...", flush=True)
     with ProcessPoolExecutor(a.workers) as ex:
         rows = []
