@@ -7,6 +7,14 @@ services:
       PUID: "1000" # OMV 'plex' user, so tidied files are editable from the Mac
       PGID: "100"  # 'users' group
       TZ: "Europe/London"
+      # Adds fpcalc, which the chroma (audio fingerprint) plugin needs. Without it,
+      # fingerprinting falls back to a method that leaks open files and crashes.
+      DOCKER_MODS: "linuxserver/mods:universal-package-install"
+      INSTALL_PACKAGES: "chromaprint"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     volumes:
       - ./config:/config
       # Original collection: READ-ONLY, beets can never change it.
